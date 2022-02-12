@@ -60,6 +60,11 @@ myJob := job.MyJob{}
 jobModel, err := watcher.NewJob(&myJob, nil).Build(utils.EveryMinute)
 ```
 
+### Demo Project
+This demo describes how cdule library can be used.
+
+https://github.com/deepaksinghvi/cduledemo
+
 ### Database Schema
 For the sample app, postgresql is used but users can use any db which is supported by gorm.io.
 #### DB Tables
