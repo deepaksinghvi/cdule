@@ -112,6 +112,18 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 	log.Infof("Scheduler Completed For StartTime %d To EndTime %d", scheduleStart, scheduleEnd)
 }
 
+/*
+For go 1.17 following method can be used.
+func executeJob(jobInstance interface{}, jobHistory *model.JobHistory) {
+	defer panicRecovery(jobHistory)
+	jobInstance.(job.Job).Execute()
+}
+*/
+
+/*
+cdule library has been built and developed using go 1.18 (go1.18beta2), if you need to use it for 1.17
+then build from source by uncommenting the above method and comment the follwoing
+*/
 func executeJob(jobInstance any, jobHistory *model.JobHistory) {
 	defer panicRecovery(jobHistory)
 	jobInstance.(job.Job).Execute()

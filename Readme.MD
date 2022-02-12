@@ -5,7 +5,7 @@ Users could use any database which is supported by [gorm.io](https://gorm.io/).
 
 ### To Download the cdule library
 ```
-go get github.com/deepaksighvi/cdule
+go get github.com/deepaksinghvi/cdule
 ```
 
 ### Usage Instruction

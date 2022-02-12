@@ -11,11 +11,15 @@ import (
 	"time"
 )
 
-func main() {
-	NewCdule()
+type Cdule struct {
 }
 
-func NewCdule() {
+func main() {
+	cdule := Cdule{}
+	cdule.NewCdule()
+}
+
+func (cdule Cdule) NewCdule() {
 	model.ConnectDataBase()
 	worker, err := model.CduleRepos.CduleRepository.GetWorker(watcher.WorkerID)
 	if nil != err {
@@ -39,14 +43,6 @@ func NewCdule() {
 
 	workerWatcher := createWorkerWatcher()
 	schedulerWatcher := createSchedulerWatcher()
-
-	/*myJob := job.MyJob{}
-	jobModel, err := watcher.NewJob(&myJob, nil).Build(utils.EveryMinute)
-	log.Info(jobModel)
-
-	panicJob := job.PanicJob{}
-	panicJobModel, err := watcher.NewJob(&panicJob, nil).Build(utils.EveryMinute)
-	log.Info(panicJobModel)*/
 
 	select {
 	case sig := <-c:
