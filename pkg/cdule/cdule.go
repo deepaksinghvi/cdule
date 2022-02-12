@@ -2,8 +2,6 @@ package cdule
 
 import (
 	"fmt"
-	"github.com/deepaksinghvi/cdule/pkg/job"
-	"github.com/deepaksinghvi/cdule/pkg/utils"
 	"os"
 	"os/signal"
 	"time"
@@ -42,13 +40,13 @@ func (cdule Cdule) NewCdule() {
 	workerWatcher := createWorkerWatcher()
 	schedulerWatcher := createSchedulerWatcher()
 
-	myJob := job.MyJob{}
+	/*myJob := job.MyJob{}
 	jobModel, err := watcher.NewJob(&myJob, nil).Build(utils.EveryMinute)
 	log.Info(jobModel)
 
 	panicJob := job.PanicJob{}
 	panicJobModel, err := watcher.NewJob(&panicJob, nil).Build(utils.EveryMinute)
-	log.Info(panicJobModel)
+	log.Info(panicJobModel)*/
 	select {
 	case sig := <-c:
 		fmt.Printf("Received %s signal. Aborting...\n", sig)
