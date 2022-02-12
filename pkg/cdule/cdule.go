@@ -1,9 +1,6 @@
 package cdule
 
 import (
-	"fmt"
-	"os"
-	"os/signal"
 	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg/model"
@@ -13,6 +10,8 @@ import (
 )
 
 type Cdule struct {
+	*watcher.WorkerWatcher
+	*watcher.ScheduleWatcher
 }
 
 func (cdule Cdule) NewCdule() {
@@ -34,12 +33,6 @@ func (cdule Cdule) NewCdule() {
 		}
 		model.CduleRepos.CduleRepository.CreateWorker(&worker)
 	}
-	c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)
-
-	workerWatcher := createWorkerWatcher()
-	schedulerWatcher := createSchedulerWatcher()
-
 	/*myJob := job.MyJob{}
 	jobModel, err := watcher.NewJob(&myJob, nil).Build(utils.EveryMinute)
 	log.Info(jobModel)
@@ -47,14 +40,30 @@ func (cdule Cdule) NewCdule() {
 	panicJob := job.PanicJob{}
 	panicJobModel, err := watcher.NewJob(&panicJob, nil).Build(utils.EveryMinute)
 	log.Info(panicJobModel)*/
-	select {
+
+	cdule.createWatcherAndWaitForSignal()
+}
+
+func (cdule Cdule) createWatcherAndWaitForSignal() {
+	/*c := make(chan os.Signal)
+	signal.Notify(c, os.Interrupt)*/
+
+	workerWatcher := createWorkerWatcher()
+	schedulerWatcher := createSchedulerWatcher()
+	cdule.WorkerWatcher = workerWatcher
+	cdule.ScheduleWatcher = schedulerWatcher
+	/*select {
 	case sig := <-c:
 		fmt.Printf("Received %s signal. Aborting...\n", sig)
 		workerWatcher.Stop()
 		schedulerWatcher.Stop()
-	}
+	}*/
 }
 
+func (cdule Cdule) StopWatcher() {
+	cdule.WorkerWatcher.Stop()
+	cdule.ScheduleWatcher.Stop()
+}
 func createWorkerWatcher() *watcher.WorkerWatcher {
 	workerWatcher := &watcher.WorkerWatcher{
 		Closed: make(chan struct{}),
