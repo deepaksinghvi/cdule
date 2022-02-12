@@ -3,6 +3,10 @@
 Golang based scheduler library with database support.
 Users could use any database which is supported by [gorm.io](https://gorm.io/).
 
+### To Download the cdule library
+```
+go get github.com/deepaksighvi/cdule
+```
 
 ### Usage Instruction
 Step 1 : Configure you database or create the same as mentioned in the below configuration
