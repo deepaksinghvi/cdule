@@ -1,6 +1,8 @@
 package cdule
 
 import (
+	"github.com/deepaksinghvi/cdule/pkg/job"
+	"github.com/deepaksinghvi/cdule/pkg/utils"
 	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg/model"
@@ -14,7 +16,7 @@ type Cdule struct {
 	*watcher.ScheduleWatcher
 }
 
-func (cdule Cdule) NewCdule() {
+func (cdule *Cdule) NewCdule() {
 	model.ConnectDataBase()
 	worker, err := model.CduleRepos.CduleRepository.GetWorker(watcher.WorkerID)
 	if nil != err {
@@ -33,18 +35,35 @@ func (cdule Cdule) NewCdule() {
 		}
 		model.CduleRepos.CduleRepository.CreateWorker(&worker)
 	}
-	/*myJob := job.MyJob{}
-	jobModel, err := watcher.NewJob(&myJob, nil).Build(utils.EveryMinute)
+
+	myJob := job.MyJob{}
+	jobData := make(map[string]string)
+	jobData["one"] = "1"
+	jobData["two"] = "2"
+	jobData["three"] = "3"
+	jobModel, err := watcher.NewJob(&myJob, jobData).Build(utils.EveryMinute)
 	log.Info(jobModel)
 
-	panicJob := job.PanicJob{}
-	panicJobModel, err := watcher.NewJob(&panicJob, nil).Build(utils.EveryMinute)
-	log.Info(panicJobModel)*/
+	/*
+		TODO this code is kept here for the development debugging, will be removed in future
 
+		myJob := job.MyJob{}
+		jobData := make(map[string]string)
+		jobData["one"] = "1"
+		jobData["two"] = "2"
+		jobData["three"] = "3"
+		jobModel, err := watcher.NewJob(&myJob, jobData).Build(utils.EveryMinute)
+		log.Info(jobModel)
+
+		panicJob := job.PanicJob{}
+		// no job data for panicJob
+		panicJobModel, err := watcher.NewJob(&panicJob, nil).Build(utils.EveryMinute)
+		log.Info(panicJobModel)
+	*/
 	cdule.createWatcherAndWaitForSignal()
 }
 
-func (cdule Cdule) createWatcherAndWaitForSignal() {
+func (cdule *Cdule) createWatcherAndWaitForSignal() {
 	/*c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)*/
 

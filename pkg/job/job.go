@@ -1,6 +1,7 @@
 package job
 
 type Job interface {
-	Execute()
+	Execute(map[string]string)
 	JobName() string
+	GetJobData() map[string]string
 }

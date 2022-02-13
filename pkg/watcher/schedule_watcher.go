@@ -1,8 +1,12 @@
 package watcher
 
 import (
+	"encoding/json"
+
+	"github.com/deepaksinghvi/cdule/pkg"
 	"github.com/deepaksinghvi/cdule/pkg/job"
 	"github.com/deepaksinghvi/cdule/pkg/model"
+
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -17,8 +21,8 @@ type ScheduleWatcher struct {
 	Ticker *time.Ticker
 }
 
-var lastScheduleExeucitonTime int64
-var nextScheduleExeuctionTime int64
+var lastScheduleExecutionTime int64
+var nextScheduleExecutionTime int64
 
 func (t *ScheduleWatcher) Run() {
 	for {
@@ -27,12 +31,12 @@ func (t *ScheduleWatcher) Run() {
 			return
 		case <-t.Ticker.C:
 			now := time.Now()
-			lastScheduleExeucitonTime = now.Add(-1 * time.Minute).UnixNano()
-			nextScheduleExeuctionTime = now.UnixNano()
+			lastScheduleExecutionTime = now.Add(-1 * time.Minute).UnixNano()
+			nextScheduleExecutionTime = now.UnixNano()
 
-			log.Infof("lastScheduleExeucitonTime %d", lastScheduleExeucitonTime)
-			log.Infof("nextScheduleExeuctionTime %d", nextScheduleExeuctionTime)
-			runNextScheduleJobs(lastScheduleExeucitonTime, nextScheduleExeuctionTime)
+			log.Infof("lastScheduleExecutionTime %d", lastScheduleExecutionTime)
+			log.Infof("nextScheduleExecutionTime %d", nextScheduleExecutionTime)
+			runNextScheduleJobs(lastScheduleExecutionTime, nextScheduleExecutionTime)
 		}
 	}
 }
@@ -55,6 +59,19 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 
 	for _, schedule := range schedules {
 		scheduledJob, err := model.CduleRepos.CduleRepository.GetJob(schedule.JobID)
+		if nil != err {
+			log.Errorf("Error while running Schedule for %d : %s", schedule.JobID, err.Error())
+			continue
+		}
+		jobDataStr := schedule.JobData
+		var jobDataMap map[string]string
+		if pkg.EMPTYSTRING != jobDataStr {
+			err = json.Unmarshal([]byte(jobDataStr), &jobDataMap)
+			if nil != err {
+				log.Error(err)
+				continue
+			}
+		}
 		var jobHistory *model.JobHistory
 		if err == nil {
 			jobHistory, err = model.CduleRepos.CduleRepository.GetJobHistoryForSchedule(schedule.ExecutionID)
@@ -65,7 +82,8 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 				if jobHistory.Status == model.JobStatusNew {
 					jobHistory.Status = model.JobStatusInProgress
 					model.CduleRepos.CduleRepository.UpdateJobHistory(jobHistory)
-					jobInstance.(job.Job).Execute()
+					jobInstance.(job.Job).Execute(jobDataMap)
+					jobDataMap = jobInstance.(job.Job).GetJobData()
 				}
 			} else {
 				// if job history is not there for this schedule, so this should be executed.
@@ -81,7 +99,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 				jobHistory.Status = model.JobStatusInProgress
 				model.CduleRepos.CduleRepository.UpdateJobHistory(jobHistory)
 
-				executeJob(jobInstance, jobHistory)
+				jobDataMap = executeJob(jobInstance, jobHistory, &jobDataMap)
 			}
 
 			// Calculate the next schedule for the current job
@@ -89,6 +107,13 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 			if err != nil {
 				log.Error(err.Error())
 				return
+			}
+			jobDataBytes, err := json.Marshal(jobDataMap)
+			if nil != err {
+				log.Errorf("Error %s for JobName %s and Schedule ID %d ", err.Error(), storedJob.JobName, schedule.ExecutionID)
+			}
+			if string(jobDataBytes) != pkg.EMPTYSTRING {
+				jobDataStr = string(jobDataBytes)
 			}
 			SchedulerParser, err := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow).Parse(storedJob.CronExpression)
 			if err != nil {
@@ -104,6 +129,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 				// TODO to be updated based on the number of jobs are getting executed by any worker. To load balance the job execution
 				WorkerID: schedule.WorkerID,
 				JobID:    schedule.JobID,
+				JobData:  jobDataStr,
 			}
 			model.CduleRepos.CduleRepository.CreateSchedule(&newSchedule)
 
@@ -114,19 +140,20 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 
 /*
 For go 1.17 following method can be used.
-func executeJob(jobInstance interface{}, jobHistory *model.JobHistory) {
+func executeJob(jobInstance interface{}, jobHistory *model.JobHistory, jobDataMap map[string]string) {
 	defer panicRecovery(jobHistory)
-	jobInstance.(job.Job).Execute()
+	jobInstance.(job.Job).Execute(jobDataMap)
 }
 */
 
 /*
 cdule library has been built and developed using go 1.18 (go1.18beta2), if you need to use it for 1.17
-then build from source by uncommenting the above method and comment the follwoing
+then build from source by uncommenting the above method and comment the following
 */
-func executeJob(jobInstance any, jobHistory *model.JobHistory) {
+func executeJob(jobInstance any, jobHistory *model.JobHistory, jobDataMap *map[string]string) map[string]string {
 	defer panicRecovery(jobHistory)
-	jobInstance.(job.Job).Execute()
+	jobInstance.(job.Job).Execute(*jobDataMap)
+	return jobInstance.(job.Job).GetJobData()
 }
 
 // If there is any panic from Job Execution, set the JobStatus as FAILED

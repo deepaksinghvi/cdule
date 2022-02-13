@@ -6,6 +6,9 @@ import (
 	"github.com/deepaksinghvi/cdule/pkg/cdule"
 )
 
+/*
+TODO This is for the development time debugging and to be removed later
+*/
 func main() {
 	cdule := cdule.Cdule{}
 	cdule.NewCdule()

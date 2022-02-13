@@ -32,6 +32,7 @@ type Job struct {
 	GroupName      string `json:"group_name"`
 	CronExpression string `json:"cron"`
 	Expired        bool   `json:"expired"`
+	JobData        string `json:"job_data"`
 }
 
 type JobHistory struct {
@@ -52,6 +53,7 @@ type Schedule struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	WorkerID    string         `json:"worker_id"`
 	JobID       int64          `gorm:"primaryKey",json:"job_id"`
+	JobData     string         `json:"job_data"`
 }
 
 // Worker Node health check via the heartbeat
