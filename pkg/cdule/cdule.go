@@ -1,8 +1,6 @@
 package cdule
 
 import (
-	"github.com/deepaksinghvi/cdule/pkg/job"
-	"github.com/deepaksinghvi/cdule/pkg/utils"
 	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg/model"
@@ -35,14 +33,6 @@ func (cdule *Cdule) NewCdule() {
 		}
 		model.CduleRepos.CduleRepository.CreateWorker(&worker)
 	}
-
-	myJob := job.MyJob{}
-	jobData := make(map[string]string)
-	jobData["one"] = "1"
-	jobData["two"] = "2"
-	jobData["three"] = "3"
-	jobModel, err := watcher.NewJob(&myJob, jobData).Build(utils.EveryMinute)
-	log.Info(jobModel)
 
 	/*
 		TODO this code is kept here for the development debugging, will be removed in future
