@@ -1,0 +1,3 @@
+cduletype: MEMORY
+dburl: /Users/dsinghvi/sqlite.db
+cduleconsistency: AT_MOST_ONCE

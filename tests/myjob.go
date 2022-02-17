@@ -1,6 +1,7 @@
-package job
+package tests
 
 import (
+	"github.com/deepaksinghvi/cdule/pkg/job"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -9,7 +10,7 @@ import (
 var myJobData map[string]string
 
 type MyJob struct {
-	Job Job
+	Job job.Job
 }
 
 func (m MyJob) Execute(jobData map[string]string) {

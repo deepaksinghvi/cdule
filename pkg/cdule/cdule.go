@@ -14,8 +14,11 @@ type Cdule struct {
 	*watcher.ScheduleWatcher
 }
 
-func (cdule *Cdule) NewCdule() {
-	model.ConnectDataBase()
+func (cdule *Cdule) NewCdule(param ...string) {
+	if nil == param {
+		param = []string{"./resources", "config"} // default path for resources
+	}
+	model.ConnectDataBase(param)
 	worker, err := model.CduleRepos.CduleRepository.GetWorker(watcher.WorkerID)
 	if nil != err {
 		log.Errorf("Error getting workder %s ", err.Error())

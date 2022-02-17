@@ -1,9 +1,12 @@
-package job
+package tests
 
-import log "github.com/sirupsen/logrus"
+import (
+	"github.com/deepaksinghvi/cdule/pkg/job"
+	log "github.com/sirupsen/logrus"
+)
 
 type PanicJob struct {
-	Job Job
+	Job job.Job
 }
 
 func (j PanicJob) Execute(jobData map[string]string) {

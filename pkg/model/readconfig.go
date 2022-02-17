@@ -7,12 +7,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ReadConfig(param ...string) (*pkg.CduleConfig, error) {
-	if nil == param {
-		param = []string{"./resources"} // default path for resources
-	}
-	viper.SetConfigName("config")
-	viper.AddConfigPath(param[0])
+func ReadConfig(param []string) (*pkg.CduleConfig, error) {
+	viper.AddConfigPath(param[0]) //"./resources"
+	viper.SetConfigName(param[1]) // "config"
 	viper.AutomaticEnv()
 	viper.SetConfigType("yml")
 

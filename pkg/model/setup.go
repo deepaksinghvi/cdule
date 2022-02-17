@@ -27,8 +27,8 @@ type Repositories struct {
 	DB              *gorm.DB
 }
 
-func ConnectDataBase() {
-	cduleConfig, err := ReadConfig()
+func ConnectDataBase(param []string) {
+	cduleConfig, err := ReadConfig(param)
 	if nil != err {
 		log.Error(err)
 		panic("Failed to read config!")
@@ -81,7 +81,7 @@ func sqliteConn(dbDSN string) (db *gorm.DB) {
 	//db, err := gorm.Open(sqlite.Open("sqlite.db"), &gorm.Config{})
 
 	// If you would use file based as mentioned above db
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(dbDSN), &gorm.Config{})
 	if err != nil {
 		log.Error(dbDSN)
 		panic("Failed to connect to database! " + dbDSN)
