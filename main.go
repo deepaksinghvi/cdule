@@ -14,18 +14,17 @@ TODO This TestJob schedule in main program is for the development debugging.
 */
 func main() {
 	c := cdule.Cdule{}
-	c.NewCdule()
+	c.NewCduleWithWorker("worker1")
 
 	myJob := TestJob{}
 	jobData := make(map[string]string)
 	jobData["one"] = "1"
 	jobData["two"] = "2"
 	jobData["three"] = "3"
-	jobRecordExpected, err := cdule.NewJob(&myJob, jobData).Build(utils.EveryMinute)
+	_, err := cdule.NewJob(&myJob, jobData).Build(utils.EveryMinute)
 	if nil != err {
 		log.Error(err)
 	}
-	log.Infof("%v", jobRecordExpected)
 	time.Sleep(5 * time.Minute)
 	c.StopWatcher()
 }

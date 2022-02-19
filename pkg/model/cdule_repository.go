@@ -40,7 +40,7 @@ type CduleRepository interface {
 	CreateSchedule(schedule *Schedule) (*Schedule, error)
 	UpdateSchedule(schedule *Schedule) (*Schedule, error)
 	GetSchedule(scheduleID int64) (*Schedule, error)
-	GetScheduleBetween(scheduleStart, scheduleEnd int64) ([]Schedule, error)
+	GetScheduleBetween(scheduleStart, scheduleEnd int64, workerID string) ([]Schedule, error)
 	GetSchedulesForJob(jobID int64) ([]Schedule, error)
 	GetSchedulesForWorker(workerID string) ([]Schedule, error)
 	DeleteScheduleForJob(jobID int64) ([]Schedule, error)
@@ -216,9 +216,9 @@ func (c cduleRepository) GetSchedule(executionID int64) (*Schedule, error) {
 	return &schedule, nil
 }
 
-func (c cduleRepository) GetScheduleBetween(scheduleStart, scheduleEnd int64) ([]Schedule, error) {
+func (c cduleRepository) GetScheduleBetween(scheduleStart, scheduleEnd int64, workerID string) ([]Schedule, error) {
 	var schedules []Schedule
-	if err := c.DB.Where("execution_id >= ? and execution_id <= ?", scheduleStart, scheduleEnd).Find(&schedules).Error; err != nil {
+	if err := c.DB.Where("execution_id >= ? and execution_id <= ? and worker_id = ?", scheduleStart, scheduleEnd, workerID).Find(&schedules).Error; err != nil {
 		return nil, err
 	}
 	return schedules, nil

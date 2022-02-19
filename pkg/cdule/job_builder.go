@@ -85,5 +85,7 @@ func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 		log.Error(err.Error())
 		return job, err
 	}
+	log.Infof("*** Job Scheduled Info ***\n JobName: %s,\n Schedule Cron: %s,\n Job Scheduled Time: %d,\n Worker: %s ",
+		newJob.JobName, newJob.CronExpression, firstSchedule.ExecutionID, firstSchedule.WorkerID)
 	return job, err
 }
