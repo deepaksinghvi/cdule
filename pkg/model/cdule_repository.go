@@ -227,8 +227,11 @@ func (c cduleRepository) DeleteScheduleForJob(jobID int64) ([]Schedule, error) {
 	if nil != err {
 		return nil, err
 	}
-	if err := c.DB.Delete(&schedules).Error; err != nil {
-		return nil, err
+	for _, schedule := range schedules {
+		if err := c.DB.Where("job_id = ? and execution_id = ?",
+			schedule.JobID, schedule.ExecutionID).Delete(&Schedule{}).Error; err != nil {
+			return nil, err
+		}
 	}
 	return schedules, nil
 }
@@ -238,8 +241,11 @@ func (c cduleRepository) DeleteScheduleForWorker(workerID string) ([]Schedule, e
 	if nil != err {
 		return nil, err
 	}
-	if err := c.DB.Delete(&schedules).Error; err != nil {
-		return nil, err
+	for _, schedule := range schedules {
+		if err := c.DB.Where("job_id = ? and execution_id = ?",
+			schedule.JobID, schedule.ExecutionID).Delete(&Schedule{}).Error; err != nil {
+			return nil, err
+		}
 	}
 	return schedules, nil
 }

@@ -48,11 +48,11 @@ type JobHistory struct {
 // Schedule used by Execution Routine to execute a scheduled job in the evert one minute duration
 type Schedule struct {
 	ExecutionID int64 `gorm:"primaryKey",json:"execution_id"`
+	JobID       int64 `gorm:"primaryKey",json:"job_id"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   gorm.DeletedAt `gorm:"index"`
 	WorkerID    string         `json:"worker_id"`
-	JobID       int64          `gorm:"primaryKey",json:"job_id"`
 	JobData     string         `json:"job_data"`
 }
 
