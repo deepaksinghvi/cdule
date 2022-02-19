@@ -1,17 +1,25 @@
 package cdule
 
 import (
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg/model"
-	"github.com/deepaksinghvi/cdule/pkg/watcher"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
+var WorkerID string
+
 type Cdule struct {
-	*watcher.WorkerWatcher
-	*watcher.ScheduleWatcher
+	*WorkerWatcher
+	*ScheduleWatcher
+}
+
+func init() {
+	WorkerID = getWorkerID()
 }
 
 func (cdule *Cdule) NewCdule(param ...string) {
@@ -19,7 +27,7 @@ func (cdule *Cdule) NewCdule(param ...string) {
 		param = []string{"./resources", "config"} // default path for resources
 	}
 	model.ConnectDataBase(param)
-	worker, err := model.CduleRepos.CduleRepository.GetWorker(watcher.WorkerID)
+	worker, err := model.CduleRepos.CduleRepository.GetWorker(WorkerID)
 	if nil != err {
 		log.Errorf("Error getting workder %s ", err.Error())
 	}
@@ -29,7 +37,7 @@ func (cdule *Cdule) NewCdule(param ...string) {
 	} else {
 		// First time cdule started on a worker node
 		worker := model.Worker{
-			WorkerID:  watcher.WorkerID,
+			WorkerID:  WorkerID,
 			CreatedAt: time.Time{},
 			UpdatedAt: time.Time{},
 			DeletedAt: gorm.DeletedAt{},
@@ -37,28 +45,14 @@ func (cdule *Cdule) NewCdule(param ...string) {
 		model.CduleRepos.CduleRepository.CreateWorker(&worker)
 	}
 
-	/*
-		TODO this code is kept here for the development debugging, will be removed in future
-
-		myJob := job.MyJob{}
-		jobData := make(map[string]string)
-		jobData["one"] = "1"
-		jobData["two"] = "2"
-		jobData["three"] = "3"
-		jobModel, err := watcher.NewJob(&myJob, jobData).Build(utils.EveryMinute)
-		log.Info(jobModel)
-
-		panicJob := job.PanicJob{}
-		// no job data for panicJob
-		panicJobModel, err := watcher.NewJob(&panicJob, nil).Build(utils.EveryMinute)
-		log.Info(panicJobModel)
-	*/
 	cdule.createWatcherAndWaitForSignal()
 }
 
 func (cdule *Cdule) createWatcherAndWaitForSignal() {
-	/*c := make(chan os.Signal)
-	signal.Notify(c, os.Interrupt)*/
+	/*
+		schedule watcher stop logic to abort program with signal like ctrl + c
+		c := make(chan os.Signal)
+		signal.Notify(c, os.Interrupt)*/
 
 	workerWatcher := createWorkerWatcher()
 	schedulerWatcher := createSchedulerWatcher()
@@ -76,8 +70,8 @@ func (cdule Cdule) StopWatcher() {
 	cdule.WorkerWatcher.Stop()
 	cdule.ScheduleWatcher.Stop()
 }
-func createWorkerWatcher() *watcher.WorkerWatcher {
-	workerWatcher := &watcher.WorkerWatcher{
+func createWorkerWatcher() *WorkerWatcher {
+	workerWatcher := &WorkerWatcher{
 		Closed: make(chan struct{}),
 		Ticker: time.NewTicker(time.Second * 30), // used for worker health check update in db.
 	}
@@ -90,8 +84,8 @@ func createWorkerWatcher() *watcher.WorkerWatcher {
 	return workerWatcher
 }
 
-func createSchedulerWatcher() *watcher.ScheduleWatcher {
-	scheduleWatcher := &watcher.ScheduleWatcher{
+func createSchedulerWatcher() *ScheduleWatcher {
+	scheduleWatcher := &ScheduleWatcher{
 		Closed: make(chan struct{}),
 		Ticker: time.NewTicker(time.Minute * 1), // used for worker health check update in db.
 	}
@@ -102,4 +96,13 @@ func createSchedulerWatcher() *watcher.ScheduleWatcher {
 		scheduleWatcher.Run()
 	}()
 	return scheduleWatcher
+}
+
+func getWorkerID() string {
+	hostname, err := os.Hostname()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return hostname
 }

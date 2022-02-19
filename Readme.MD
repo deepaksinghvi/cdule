@@ -96,7 +96,7 @@ For the sample app, postgresql is used but users can use any db which is support
 * workers : To store the worker nodes and their health check.
 
 
-![dbschema.png](resources/dbschema.png)
+![dbschema.png](pkg/doc/dbschema.png)
 
 
 ### Sample Cron

@@ -1,7 +1,6 @@
 package tests
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os"
 	"testing"
 	"time"
@@ -9,10 +8,10 @@ import (
 	"github.com/deepaksinghvi/cdule/pkg/cdule"
 	"github.com/deepaksinghvi/cdule/pkg/model"
 	"github.com/deepaksinghvi/cdule/pkg/utils"
-	"github.com/deepaksinghvi/cdule/pkg/watcher"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,11 +61,11 @@ func createScheduler() (error, cdule.Cdule) {
 }
 
 func createTestJob() (*model.Job, error) {
-	myJob := MyJob{}
+	myJob := TestJob{}
 	jobData := make(map[string]string)
 	jobData["one"] = "1"
 	jobData["two"] = "2"
 	jobData["three"] = "3"
-	jobRecordExpected, err := watcher.NewJob(&myJob, jobData).Build(utils.EveryMinute)
+	jobRecordExpected, err := cdule.NewJob(&myJob, jobData).Build(utils.EveryMinute)
 	return jobRecordExpected, err
 }

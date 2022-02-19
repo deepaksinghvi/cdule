@@ -3,17 +3,18 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	l "log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg"
+
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	l "log"
 )
 
 var DB *gorm.DB
