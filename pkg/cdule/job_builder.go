@@ -76,7 +76,7 @@ func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 		CreatedAt:   time.Time{},
 		UpdatedAt:   time.Time{},
 		DeletedAt:   gorm.DeletedAt{},
-		WorkerID:    getWorkerID(),
+		WorkerID:    WorkerID,
 		JobID:       job.ID,
 		JobData:     job.JobData,
 	}
