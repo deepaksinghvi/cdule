@@ -158,21 +158,35 @@ func (w workerJobCountList) Less(i, j int) bool {
 	return w[i].Count > w[j].Count
 }
 
-func (w workerJobCountList) Swap(i, j int) {
-	w[i], w[j] = w[j], w[i]
-}
 func findNextAvailableWorker(workers []model.Worker, schedule model.Schedule) (string, error) {
 	workerName := schedule.WorkerID
-	var result []WorkerJobCount
-	model.DB.Raw("SELECT worker_id, count(1) FROM job_histories WHERE job_id = ? group by worker_id", schedule.JobID).Scan(&result)
-	//sort.Sort(workerJobCountList(result))
-	if len(result) <= 0 {
+	var workerJobCountMetrics []WorkerJobCount
+	model.DB.Raw("SELECT worker_id, count(1) FROM job_histories WHERE job_id = ? group by worker_id", schedule.JobID).Scan(&workerJobCountMetrics)
+	log.Infof("workerJobCountMetrics %v", workerJobCountMetrics)
+	if len(workerJobCountMetrics) <= 0 {
+		log.Infof("workerName %s would be used", workerName)
 		return workerName, nil
 	}
-	sort.Slice(result[:], func(i, j int) bool {
-		return result[i].Count < result[j].Count
+	for _, worker := range workers {
+		appendWorker := true
+		for _, v := range workerJobCountMetrics {
+			if v.WorkerID == worker.WorkerID {
+				appendWorker = false
+				break
+			}
+		}
+		if appendWorker {
+			newWorkerMetric := WorkerJobCount{
+				WorkerID: worker.WorkerID,
+				Count:    0,
+			}
+			workerJobCountMetrics = append(workerJobCountMetrics, newWorkerMetric)
+		}
+	}
+	sort.Slice(workerJobCountMetrics[:], func(i, j int) bool {
+		return workerJobCountMetrics[i].Count < workerJobCountMetrics[j].Count
 	})
-	return result[0].WorkerID, nil
+	return workerJobCountMetrics[0].WorkerID, nil
 }
 
 /*
