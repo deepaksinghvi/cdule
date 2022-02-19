@@ -21,7 +21,10 @@ type Cdule struct {
 func init() {
 	WorkerID = getWorkerID()
 }
-
+func (cdule *Cdule) NewCduleWithWorker(workerName string, param ...string) {
+	WorkerID = workerName
+	cdule.NewCdule(param...)
+}
 func (cdule *Cdule) NewCdule(param ...string) {
 	if nil == param {
 		param = []string{"./resources", "config"} // default path for resources

@@ -3,6 +3,7 @@ package cdule
 import (
 	"encoding/json"
 	"reflect"
+	"sort"
 	"sync"
 	"time"
 
@@ -52,11 +53,13 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 		log.Error(err)
 		return
 	}
+	workers, err := model.CduleRepos.CduleRepository.GetWorkers()
+	if nil != err {
+		log.Error(err)
+		return
+	}
 	for _, schedule := range schedules {
 		log.Infof("Schedule ID Exeuction Time %d for Job ID: %d", schedule.ExecutionID, schedule.JobID)
-	}
-
-	for _, schedule := range schedules {
 		scheduledJob, err := model.CduleRepos.CduleRepository.GetJob(schedule.JobID)
 		if nil != err {
 			log.Errorf("Error while running Schedule for %d : %s", schedule.JobID, err.Error())
@@ -120,21 +123,54 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 				return
 			}
 			nextRunTime := SchedulerParser.Next(time.Now()).UnixNano()
+			workerIDForNextRun, _ := findNextAvailableWorker(workers, schedule)
 			newSchedule := model.Schedule{
 				ExecutionID: nextRunTime,
 				CreatedAt:   time.Now(),
 				UpdatedAt:   time.Now(),
 				DeletedAt:   gorm.DeletedAt{},
-				// TODO to be updated based on the number of jobs are getting executed by any worker. To load balance the job execution
-				WorkerID: schedule.WorkerID,
-				JobID:    schedule.JobID,
-				JobData:  jobDataStr,
+				WorkerID:    workerIDForNextRun,
+				JobID:       schedule.JobID,
+				JobData:     jobDataStr,
 			}
 			model.CduleRepos.CduleRepository.CreateSchedule(&newSchedule)
 
 		}
 	}
 	log.Infof("Scheduler Completed For StartTime %d To EndTime %d", scheduleStart, scheduleEnd)
+}
+
+type WorkerJobCount struct {
+	WorkerID string `json:"worker_id"`
+	Count    int64  `json:"count"`
+}
+
+type workerJobCountList []WorkerJobCount
+
+func (w workerJobCountList) Len() int {
+	return len(w)
+}
+
+func (w workerJobCountList) Less(i, j int) bool {
+	return w[i].Count > w[j].Count
+}
+
+func (w workerJobCountList) Swap(i, j int) {
+	w[i], w[j] = w[j], w[i]
+}
+func findNextAvailableWorker(workers []model.Worker, schedule model.Schedule) (string, error) {
+	workerName := schedule.WorkerID
+	var result []WorkerJobCount
+	model.DB.Raw("SELECT worker_id, count(1) FROM job_histories WHERE job_id = ? group by worker_id", schedule.JobID).Scan(&result)
+	//sort.Sort(workerJobCountList(result))
+	if len(result) <= 0 {
+		return workerName, nil
+	}
+	sort.Slice(result[:], func(i, j int) bool {
+		return result[i].Count < result[j].Count
+	})
+	log.Infof("Next Job scheduled for JobID %d with worker %s", schedule.JobID, result[0].WorkerID)
+	return result[0].WorkerID, nil
 }
 
 /*

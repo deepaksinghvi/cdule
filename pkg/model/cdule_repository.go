@@ -20,6 +20,7 @@ type CduleRepository interface {
 	CreateWorker(worker *Worker) (*Worker, error)
 	UpdateWorker(worker *Worker) (*Worker, error)
 	GetWorker(workerID string) (*Worker, error)
+	GetWorkers() ([]Worker, error)
 	DeleteWorker(workerID string) (*Worker, error)
 
 	CreateJob(job *Job) (*Job, error)
@@ -32,6 +33,7 @@ type CduleRepository interface {
 	CreateJobHistory(jobHistory *JobHistory) (*JobHistory, error)
 	UpdateJobHistory(jobHistory *JobHistory) (*JobHistory, error)
 	GetJobHistory(jobID int64) ([]JobHistory, error)
+	GetJobHistoryWithLimit(jobID int64, limit int) ([]JobHistory, error)
 	GetJobHistoryForSchedule(scheduleID int64) (*JobHistory, error)
 	DeleteJobHistory(jobID int64) ([]JobHistory, error)
 
@@ -68,6 +70,14 @@ func (c cduleRepository) GetWorker(workerID string) (*Worker, error) {
 		return nil, nil
 	}
 	return &worker, nil
+}
+
+func (c cduleRepository) GetWorkers() ([]Worker, error) {
+	var workers []Worker
+	if err := c.DB.Find(&workers).Error; err != nil {
+		return workers, err
+	}
+	return workers, nil
 }
 
 func (c cduleRepository) DeleteWorker(workerID string) (*Worker, error) {
@@ -152,6 +162,14 @@ func (c cduleRepository) UpdateJobHistory(jobHistory *JobHistory) (*JobHistory, 
 func (c cduleRepository) GetJobHistory(jobID int64) ([]JobHistory, error) {
 	var jobHistories []JobHistory
 	if err := c.DB.Where("job_id = ?", jobID).First(&jobHistories).Error; err != nil {
+		return nil, err
+	}
+	return jobHistories, nil
+}
+
+func (c cduleRepository) GetJobHistoryWithLimit(jobID int64, limit int) ([]JobHistory, error) {
+	var jobHistories []JobHistory
+	if err := c.DB.Where("job_id = ?", jobID).Limit(limit).Find(&jobHistories).Error; err != nil {
 		return nil, err
 	}
 	return jobHistories, nil
