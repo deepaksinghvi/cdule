@@ -27,7 +27,7 @@ func (cdule *Cdule) NewCduleWithWorker(workerName string, param ...string) {
 }
 func (cdule *Cdule) NewCdule(param ...string) {
 	if nil == param {
-		param = []string{"./resources", "config"} // default path for resources
+		param = []string{"./resources", "config", "errorLogType"} // default path for resources
 	}
 	model.ConnectDataBase(param)
 	worker, err := model.CduleRepos.CduleRepository.GetWorker(WorkerID)

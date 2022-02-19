@@ -102,6 +102,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 				model.CduleRepos.CduleRepository.UpdateJobHistory(jobHistory)
 
 				jobDataMap = executeJob(jobInstance, jobHistory, &jobDataMap)
+				log.Infof("Job Execution Completed For JobID %d on Worker %s", schedule.JobID, schedule.WorkerID)
 			}
 
 			// Calculate the next schedule for the current job
@@ -137,7 +138,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 
 		}
 	}
-	log.Infof("Scheduler Completed For StartTime %d To EndTime %d", scheduleStart, scheduleEnd)
+	log.Infof("Schedules Completed For StartTime %d To EndTime %d", scheduleStart, scheduleEnd)
 }
 
 type WorkerJobCount struct {
@@ -169,7 +170,7 @@ func findNextAvailableWorker(workers []model.Worker, schedule model.Schedule) (s
 	sort.Slice(result[:], func(i, j int) bool {
 		return result[i].Count < result[j].Count
 	})
-	log.Infof("Next Job scheduled for JobID %d with worker %s", schedule.JobID, result[0].WorkerID)
+	log.Infof("Next Job scheduled for JobID %d on Worker %s", schedule.JobID, result[0].WorkerID)
 	return result[0].WorkerID, nil
 }
 
