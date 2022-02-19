@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func ReadConfig(param []string) (*pkg.CduleConfig, error) {
+func readConfig(param []string) (*pkg.CduleConfig, error) {
 	viper.AddConfigPath(param[0]) //"./resources"
 	viper.SetConfigName(param[1]) // "config"
 	viper.AutomaticEnv()

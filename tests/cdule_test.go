@@ -56,7 +56,7 @@ func createScheduler() (error, cdule.Cdule) {
 	os.Remove(dirname + "/sqlite.db")
 
 	cdule := cdule.Cdule{}
-	cdule.NewCdule("./resources", "config_in_memory")
+	cdule.NewCdule("../resources", "config_in_memory")
 	return err, cdule
 }
 

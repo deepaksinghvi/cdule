@@ -29,7 +29,7 @@ type Repositories struct {
 }
 
 func ConnectDataBase(param []string) {
-	cduleConfig, err := ReadConfig(param)
+	cduleConfig, err := readConfig(param)
 	if nil != err {
 		log.Error(err)
 		panic("Failed to read config!")
