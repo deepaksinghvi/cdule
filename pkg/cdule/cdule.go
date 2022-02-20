@@ -29,7 +29,7 @@ func (cdule *Cdule) NewCdule(param ...string) {
 	if nil == param {
 		param = []string{"./resources", "config", "errorLogType"} // default path for resources
 	}
-	cduleConfig, err := model.ConnectDataBase(param)
+	_, err := model.ConnectDataBase(param)
 	if nil != err {
 		log.Errorf("Error getting configuration %s ", err.Error())
 		return
@@ -45,12 +45,10 @@ func (cdule *Cdule) NewCdule(param ...string) {
 	} else {
 		// First time cdule started on a worker node
 		worker := model.Worker{
-			WorkerID:     WorkerID,
-			CreatedAt:    time.Time{},
-			UpdatedAt:    time.Time{},
-			DeletedAt:    gorm.DeletedAt{},
-			WorkerHostIP: cduleConfig.WorkerHostIP,
-			WorkerPort:   cduleConfig.WorkerPort,
+			WorkerID:  WorkerID,
+			CreatedAt: time.Time{},
+			UpdatedAt: time.Time{},
+			DeletedAt: gorm.DeletedAt{},
 		}
 		model.CduleRepos.CduleRepository.CreateWorker(&worker)
 	}
