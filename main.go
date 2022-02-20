@@ -1,18 +1,19 @@
 package main
 
 import (
-	"github.com/deepaksinghvi/cdule/pkg/model"
-	"github.com/deepaksinghvi/cdule/pkg/utils"
-	log "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg/cdule"
+	"github.com/deepaksinghvi/cdule/pkg/utils"
+
+	log "github.com/sirupsen/logrus"
 )
 
 /*
 TODO This TestJob schedule in main program is for the development debugging.
 */
+
 func main() {
 	c := cdule.Cdule{}
 	c.NewCduleWithWorker("worker1")
@@ -22,11 +23,7 @@ func main() {
 	jobData["one"] = "1"
 	jobData["two"] = "2"
 	jobData["three"] = "3"
-	testJobModel, err := model.CduleRepos.CduleRepository.GetJobByName(myJob.JobName())
-	if nil == testJobModel {
-		// if job is not already present in the DB then schedule it
-		testJobModel, err = cdule.NewJob(&myJob, jobData).Build(utils.EveryMinute)
-	}
+	_, err := cdule.NewJob(&myJob, jobData).Build(utils.EveryMinute)
 	if nil != err {
 		log.Error(err)
 	}

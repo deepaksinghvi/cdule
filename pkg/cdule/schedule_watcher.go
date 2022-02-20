@@ -47,6 +47,7 @@ func (t *ScheduleWatcher) Stop() {
 
 func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 	defer panicRecoveryForSchedule()
+
 	schedules, err := model.CduleRepos.CduleRepository.GetScheduleBetween(scheduleStart, scheduleEnd, WorkerID)
 	if nil != err {
 		log.Error(err)
@@ -77,8 +78,9 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 		var jobHistory *model.JobHistory
 		if err == nil {
 			jobHistory, err = model.CduleRepos.CduleRepository.GetJobHistoryForSchedule(schedule.ExecutionID)
-			j := jobRegistry[scheduledJob.JobName]
+			j := JobRegistry[scheduledJob.JobName]
 			jobInstance := reflect.New(j).Elem().Interface()
+
 			if err != nil && err.Error() == "record not found" && jobHistory != nil {
 				// if job history was present but not executed
 				if jobHistory.Status == model.JobStatusNew {
@@ -105,26 +107,21 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 				log.Infof("Job Execution Completed For JobName: %s JobID: %d on Worker: %s", scheduledJob.JobName, schedule.JobID, schedule.WorkerID)
 				log.Info("====END====\n")
 			}
-
 			// Calculate the next schedule for the current job
-			storedJob, err := model.CduleRepos.CduleRepository.GetJobByName(jobInstance.(Job).JobName())
-			if err != nil {
-				log.Error(err.Error())
-				return
-			}
 			jobDataBytes, err := json.Marshal(jobDataMap)
 			if nil != err {
-				log.Errorf("Error %s for JobName %s and Schedule ID %d ", err.Error(), storedJob.JobName, schedule.ExecutionID)
+				log.Errorf("Error %s for JobName %s and Schedule ID %d ", err.Error(), scheduledJob.JobName, schedule.ExecutionID)
 			}
 			if string(jobDataBytes) != pkg.EMPTYSTRING {
 				jobDataStr = string(jobDataBytes)
 			}
-			SchedulerParser, err := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow).Parse(storedJob.CronExpression)
+			SchedulerParser, err := cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow).Parse(scheduledJob.CronExpression)
 			if err != nil {
 				log.Error(err.Error())
 				return
 			}
 			nextRunTime := SchedulerParser.Next(time.Now()).UnixNano()
+
 			workerIDForNextRun, _ := findNextAvailableWorker(workers, schedule)
 			newSchedule := model.Schedule{
 				ExecutionID: nextRunTime,
@@ -137,7 +134,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 			}
 			model.CduleRepos.CduleRepository.CreateSchedule(&newSchedule)
 			log.Infof("*** Next Job Scheduled Info ***\n JobName: %s,\n Schedule Cron: %s,\n Job Scheduled Time: %d,\n Worker: %s ",
-				storedJob.JobName, storedJob.CronExpression, newSchedule.ExecutionID, newSchedule.WorkerID)
+				scheduledJob.JobName, scheduledJob.CronExpression, newSchedule.ExecutionID, newSchedule.WorkerID)
 		}
 	}
 	log.Infof("Schedules Completed For StartTime %d To EndTime %d", scheduleStart, scheduleEnd)
@@ -146,16 +143,6 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 type WorkerJobCount struct {
 	WorkerID string `json:"worker_id"`
 	Count    int64  `json:"count"`
-}
-
-type workerJobCountList []WorkerJobCount
-
-func (w workerJobCountList) Len() int {
-	return len(w)
-}
-
-func (w workerJobCountList) Less(i, j int) bool {
-	return w[i].Count > w[j].Count
 }
 
 func findNextAvailableWorker(workers []model.Worker, schedule model.Schedule) (string, error) {

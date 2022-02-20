@@ -19,8 +19,6 @@ import (
 
 var DB *gorm.DB
 
-var cduleConfig *pkg.CduleConfig
-
 var CduleRepos *Repositories
 
 type Repositories struct {
@@ -28,7 +26,7 @@ type Repositories struct {
 	DB              *gorm.DB
 }
 
-func ConnectDataBase(param []string) {
+func ConnectDataBase(param []string) (*pkg.CduleConfig, error) {
 	cduleConfig, err := readConfig(param)
 	if nil != err {
 		log.Error(err)
@@ -67,6 +65,7 @@ func ConnectDataBase(param []string) {
 		CduleRepository: NewCduleRepository(db),
 		DB:              db,
 	}
+	return cduleConfig, err
 }
 
 func postgresConn(dbDSN string) (db *gorm.DB) {

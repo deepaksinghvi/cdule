@@ -58,8 +58,10 @@ type Schedule struct {
 
 // Worker Node health check via the heartbeat
 type Worker struct {
-	WorkerID  string `gorm:"primaryKey",json:"worker_id"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	WorkerID     string `gorm:"primaryKey",json:"worker_id"`
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+	DeletedAt    gorm.DeletedAt `gorm:"index"`
+	WorkerHostIP string         `gorm:"worker_host_ip"`
+	WorkerPort   string         `gorm:"worker_port"`
 }

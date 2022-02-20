@@ -1,3 +1,5 @@
 cduletype: MEMORY
 dburl: /Users/dsinghvi/sqlite.db
 cduleconsistency: AT_MOST_ONCE
+worker_host_ip: localhost
+worker_port: 6000

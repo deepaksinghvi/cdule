@@ -1,3 +1,5 @@
 cduletype: DATABASE
 dburl: postgres://cduleuser:cdulepassword@localhost:5432/cdule?sslmode=disable
 cduleconsistency: AT_MOST_ONCE
+workerhostip: localhost
+workerport: 6000

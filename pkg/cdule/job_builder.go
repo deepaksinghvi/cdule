@@ -15,13 +15,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var jobRegistry = make(map[string]reflect.Type)
+var JobRegistry = make(map[string]reflect.Type)
 
 var ScheduleParser cron.Parser
 
 func registerType(job Job) {
 	t := reflect.TypeOf(job).Elem()
-	jobRegistry[job.JobName()] = t
+	JobRegistry[job.JobName()] = t
 }
 
 type AbstractJob struct {
@@ -36,9 +36,17 @@ func NewJob(job Job, jobData map[string]string) *AbstractJob {
 	}
 	return aj
 }
+
 func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 	// register job, this is used later to get the type of a job
 	registerType(j.Job)
+	newJobModel, err := model.CduleRepos.CduleRepository.GetJobByName(j.Job.JobName())
+	if nil != newJobModel {
+		return nil, errors.New(fmt.Sprintf("Job with Name: %s already exists", newJobModel.JobName))
+	}
+	if nil != err {
+		return nil, err
+	}
 	jobDataBytes, err := json.Marshal(j.JobData)
 	if nil != err {
 		log.Errorf("Error %s for JobName %s", err.Error(), j.Job.JobName())
@@ -62,10 +70,6 @@ func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 		return nil, err
 	}
 	nextRunTime := SchedulerParser.Next(time.Now()).UnixNano()
-	newJobModel, err := model.CduleRepos.CduleRepository.GetJobByName(newJob.JobName)
-	if nil != newJobModel {
-		return nil, errors.New(fmt.Sprintf("Job with Name: %s already exists", newJob.JobName))
-	}
 	job, err := model.CduleRepos.CduleRepository.CreateJob(newJob)
 	if err != nil {
 		log.Error(err.Error())

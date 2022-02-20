@@ -29,10 +29,15 @@ func (cdule *Cdule) NewCdule(param ...string) {
 	if nil == param {
 		param = []string{"./resources", "config", "errorLogType"} // default path for resources
 	}
-	model.ConnectDataBase(param)
+	cduleConfig, err := model.ConnectDataBase(param)
+	if nil != err {
+		log.Errorf("Error getting configuration %s ", err.Error())
+		return
+	}
 	worker, err := model.CduleRepos.CduleRepository.GetWorker(WorkerID)
 	if nil != err {
 		log.Errorf("Error getting workder %s ", err.Error())
+		return
 	}
 	if nil != worker {
 		worker.UpdatedAt = time.Now()
@@ -40,10 +45,12 @@ func (cdule *Cdule) NewCdule(param ...string) {
 	} else {
 		// First time cdule started on a worker node
 		worker := model.Worker{
-			WorkerID:  WorkerID,
-			CreatedAt: time.Time{},
-			UpdatedAt: time.Time{},
-			DeletedAt: gorm.DeletedAt{},
+			WorkerID:     WorkerID,
+			CreatedAt:    time.Time{},
+			UpdatedAt:    time.Time{},
+			DeletedAt:    gorm.DeletedAt{},
+			WorkerHostIP: cduleConfig.WorkerHostIP,
+			WorkerPort:   cduleConfig.WorkerPort,
 		}
 		model.CduleRepos.CduleRepository.CreateWorker(&worker)
 	}
