@@ -9,5 +9,6 @@ const (
 	// DATABASE type based on different types of db
 	DATABASE CType = "DATABASE"
 
+	// EMPTYSTRING string
 	EMPTYSTRING = ""
 )

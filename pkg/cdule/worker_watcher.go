@@ -9,12 +9,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// WorkerWatcher struct
 type WorkerWatcher struct {
 	Closed chan struct{}
 	WG     sync.WaitGroup
 	Ticker *time.Ticker
 }
 
+// Run to run watcher in a continuous loop
 func (t *WorkerWatcher) Run() {
 	for {
 		select {
@@ -26,6 +28,7 @@ func (t *WorkerWatcher) Run() {
 	}
 }
 
+// Stop to stop worker watcher
 func (t *WorkerWatcher) Stop() {
 	close(t.Closed)
 	t.WG.Wait()

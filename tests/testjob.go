@@ -17,11 +17,11 @@ TestJob jobData map holds the data in the format of
 	jobData["three"] = "3"
 jobData gets stored for every execution and gets updated as the next counter value on Execute() method call.
 */
-
 type TestJob struct {
 	Job cdule.Job
 }
 
+// Execute job
 func (m TestJob) Execute(jobData map[string]string) {
 	log.Info("In TestJob")
 	for k, v := range jobData {
@@ -36,10 +36,12 @@ func (m TestJob) Execute(jobData map[string]string) {
 	testJobData = jobData
 }
 
+// JobName name of the job
 func (m TestJob) JobName() string {
 	return "job.TestJob"
 }
 
+// GetJobData get Job data of the job
 func (m TestJob) GetJobData() map[string]string {
 	return testJobData
 }

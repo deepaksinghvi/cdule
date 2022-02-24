@@ -20,7 +20,7 @@ var (
 )
 
 func Test_BuildNewJob(t *testing.T) {
-	err, cdule := createScheduler()
+	cdule, err := createScheduler()
 	jobRecordExpected, err := createTestJob()
 	require.NoError(t, err)
 	jobRecordActual, err := model.CduleRepos.CduleRepository.GetJobByName(jobRecordExpected.JobName)
@@ -36,7 +36,7 @@ func Test_BuildNewJob(t *testing.T) {
 }
 
 func Test_BuildNewJobExecution(t *testing.T) {
-	err, cdule := createScheduler()
+	cdule, err := createScheduler()
 
 	jobRecordExpected, err := createTestJob()
 	require.NoError(t, err)
@@ -48,7 +48,7 @@ func Test_BuildNewJobExecution(t *testing.T) {
 	cdule.StopWatcher()
 }
 
-func createScheduler() (error, cdule.Cdule) {
+func createScheduler() (cdule.Cdule, error) {
 	dirname, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
@@ -57,7 +57,7 @@ func createScheduler() (error, cdule.Cdule) {
 
 	cdule := cdule.Cdule{}
 	cdule.NewCdule("../resources", "config_in_memory")
-	return err, cdule
+	return cdule, err
 }
 
 func createTestJob() (*model.Job, error) {

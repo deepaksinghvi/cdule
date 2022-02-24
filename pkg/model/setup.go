@@ -17,15 +17,19 @@ import (
 	"gorm.io/gorm/logger"
 )
 
+// DB gorm DB
 var DB *gorm.DB
 
+// CduleRepos repositories
 var CduleRepos *Repositories
 
+// Repositories struct
 type Repositories struct {
 	CduleRepository CduleRepository
 	DB              *gorm.DB
 }
 
+// ConnectDataBase to create a database connection
 func ConnectDataBase(param []string) (*pkg.CduleConfig, error) {
 	cduleConfig, err := readConfig(param)
 	if nil != err {
@@ -93,6 +97,8 @@ func sqliteConn(dbDSN string) (db *gorm.DB) {
 	}
 	return db
 }
+
+// Migrate database schema
 func Migrate(db *gorm.DB) {
 	db.AutoMigrate(&Job{})
 	db.AutoMigrate(&JobHistory{})

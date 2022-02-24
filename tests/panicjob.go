@@ -14,6 +14,7 @@ type PanicJob struct {
 	Job cdule.Job
 }
 
+// Execute to execute a job
 func (j PanicJob) Execute(jobData map[string]string) {
 	log.Info("In MyJPanicJob")
 	log.Infof("JobData %v", jobData)
@@ -22,10 +23,12 @@ func (j PanicJob) Execute(jobData map[string]string) {
 	log.Infof("i: %d", i)
 }
 
+// JobName name of the job
 func (j PanicJob) JobName() string {
 	return "job.PanicJob"
 }
 
+// GetJobData job data of the job
 func (j PanicJob) GetJobData() map[string]string {
 	return nil
 }

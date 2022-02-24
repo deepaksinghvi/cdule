@@ -19,6 +19,7 @@ const (
 	JobStatusFailed JobStatus = "FAILED"
 )
 
+// Model common model
 type Model struct {
 	ID        int64 `gorm:"primarykey"`
 	CreatedAt time.Time
@@ -26,6 +27,7 @@ type Model struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
+// Job struct
 type Job struct {
 	Model
 	JobName        string `json:"job_name"`
@@ -35,6 +37,7 @@ type Job struct {
 	JobData        string `json:"job_data"`
 }
 
+// JobHistory struct
 type JobHistory struct {
 	Model
 	JobID       int64          `json:"job_id"`

@@ -10,12 +10,14 @@ type cduleRepository struct {
 	DB *gorm.DB
 }
 
+// NewCduleRepository cdule repository
 func NewCduleRepository(db *gorm.DB) CduleRepository {
 	return cduleRepository{
 		DB: db,
 	}
 }
 
+// CduleRepository cdule repository interface
 type CduleRepository interface {
 	CreateWorker(worker *Worker) (*Worker, error)
 	UpdateWorker(worker *Worker) (*Worker, error)
@@ -47,6 +49,7 @@ type CduleRepository interface {
 	DeleteScheduleForWorker(workerID string) ([]Schedule, error)
 }
 
+// CreateWorker to create a worker
 func (c cduleRepository) CreateWorker(worker *Worker) (*Worker, error) {
 	if err := c.DB.Create(worker).Error; err != nil {
 		return nil, err
@@ -54,6 +57,7 @@ func (c cduleRepository) CreateWorker(worker *Worker) (*Worker, error) {
 	return worker, nil
 }
 
+// UpdateWorker to update a worker
 func (c cduleRepository) UpdateWorker(worker *Worker) (*Worker, error) {
 	if err := c.DB.Updates(worker).Error; err != nil {
 		return nil, err
@@ -61,6 +65,7 @@ func (c cduleRepository) UpdateWorker(worker *Worker) (*Worker, error) {
 	return worker, nil
 }
 
+// GetWorker to get a worker
 func (c cduleRepository) GetWorker(workerID string) (*Worker, error) {
 	var worker Worker
 	if err := c.DB.Where("worker_id = ?", workerID).Find(&worker).Error; err != nil {
@@ -72,6 +77,7 @@ func (c cduleRepository) GetWorker(workerID string) (*Worker, error) {
 	return &worker, nil
 }
 
+// GetWorkers to get a list of workers
 func (c cduleRepository) GetWorkers() ([]Worker, error) {
 	var workers []Worker
 	if err := c.DB.Find(&workers).Error; err != nil {
@@ -80,6 +86,7 @@ func (c cduleRepository) GetWorkers() ([]Worker, error) {
 	return workers, nil
 }
 
+// DeleteWorker to delete a worker
 func (c cduleRepository) DeleteWorker(workerID string) (*Worker, error) {
 	var worker Worker
 	if err := c.DB.Where("worker_id = ?", workerID).First(&worker).Error; err != nil {
@@ -91,6 +98,7 @@ func (c cduleRepository) DeleteWorker(workerID string) (*Worker, error) {
 	return &worker, nil
 }
 
+// CreateJob to create a job
 func (c cduleRepository) CreateJob(job *Job) (*Job, error) {
 	if err := c.DB.Create(job).Error; err != nil {
 		return nil, err
@@ -98,6 +106,7 @@ func (c cduleRepository) CreateJob(job *Job) (*Job, error) {
 	return job, nil
 }
 
+// UpdateJob to update a job
 func (c cduleRepository) UpdateJob(job *Job) (*Job, error) {
 	if err := c.DB.Updates(job).Error; err != nil {
 		return nil, err
@@ -105,6 +114,7 @@ func (c cduleRepository) UpdateJob(job *Job) (*Job, error) {
 	return job, nil
 }
 
+// GetJob to get a job based on ID
 func (c cduleRepository) GetJob(jobID int64) (*Job, error) {
 	var job Job
 	if err := c.DB.Where("id = ?", jobID).Find(&job).Error; err != nil {
@@ -116,6 +126,7 @@ func (c cduleRepository) GetJob(jobID int64) (*Job, error) {
 	return &job, nil
 }
 
+// GetJobByName to get a job based on Name
 func (c cduleRepository) GetJobByName(jobName string) (*Job, error) {
 	var job Job
 	if err := c.DB.Where("job_name = ?", jobName).Find(&job).Error; err != nil {
@@ -126,6 +137,8 @@ func (c cduleRepository) GetJobByName(jobName string) (*Job, error) {
 	}
 	return &job, nil
 }
+
+// GetJobs to get a job based on workerID
 func (c cduleRepository) GetJobs(workerID string) ([]Job, error) {
 	var jobs []Job
 	if err := c.DB.Where("worker_id = ? and expired=false", workerID).Find(&jobs).Error; err != nil {
@@ -134,6 +147,7 @@ func (c cduleRepository) GetJobs(workerID string) ([]Job, error) {
 	return jobs, nil
 }
 
+// DeleteJob to get a job based on ID
 func (c cduleRepository) DeleteJob(jobID int64) (*Job, error) {
 	var job Job
 	if err := c.DB.Where("id = ?", jobID).First(&job).Error; err != nil {
@@ -145,6 +159,7 @@ func (c cduleRepository) DeleteJob(jobID int64) (*Job, error) {
 	return &job, nil
 }
 
+// CreateJobHistory to create a JobHistory
 func (c cduleRepository) CreateJobHistory(jobHistory *JobHistory) (*JobHistory, error) {
 	if err := c.DB.Create(jobHistory).Error; err != nil {
 		return nil, err
@@ -152,6 +167,7 @@ func (c cduleRepository) CreateJobHistory(jobHistory *JobHistory) (*JobHistory, 
 	return jobHistory, nil
 }
 
+// UpdateJobHistory to update a JobHistory
 func (c cduleRepository) UpdateJobHistory(jobHistory *JobHistory) (*JobHistory, error) {
 	if err := c.DB.Updates(jobHistory).Error; err != nil {
 		return nil, err
@@ -159,6 +175,7 @@ func (c cduleRepository) UpdateJobHistory(jobHistory *JobHistory) (*JobHistory, 
 	return jobHistory, nil
 }
 
+// GetJobHistory to get a JobHistory by JobID
 func (c cduleRepository) GetJobHistory(jobID int64) ([]JobHistory, error) {
 	var jobHistories []JobHistory
 	if err := c.DB.Where("job_id = ?", jobID).First(&jobHistories).Error; err != nil {
@@ -167,6 +184,7 @@ func (c cduleRepository) GetJobHistory(jobID int64) ([]JobHistory, error) {
 	return jobHistories, nil
 }
 
+// GetJobHistoryWithLimit to get a JobHistory by JobID and limit
 func (c cduleRepository) GetJobHistoryWithLimit(jobID int64, limit int) ([]JobHistory, error) {
 	var jobHistories []JobHistory
 	if err := c.DB.Where("job_id = ?", jobID).Limit(limit).Find(&jobHistories).Error; err != nil {
@@ -175,6 +193,7 @@ func (c cduleRepository) GetJobHistoryWithLimit(jobID int64, limit int) ([]JobHi
 	return jobHistories, nil
 }
 
+// GetJobHistoryForSchedule to get a JobHistory by scheduleID
 func (c cduleRepository) GetJobHistoryForSchedule(scheduleID int64) (*JobHistory, error) {
 	var jobHistory JobHistory
 	if err := c.DB.Where("execution_id = ?", scheduleID).First(&jobHistory).Error; err != nil {
@@ -183,6 +202,7 @@ func (c cduleRepository) GetJobHistoryForSchedule(scheduleID int64) (*JobHistory
 	return &jobHistory, nil
 }
 
+// DeleteJobHistory to delete a JobHistory by jobID
 func (c cduleRepository) DeleteJobHistory(jobID int64) ([]JobHistory, error) {
 	jobHistories, err := c.GetJobHistory(jobID)
 	if nil != err {
@@ -194,6 +214,7 @@ func (c cduleRepository) DeleteJobHistory(jobID int64) ([]JobHistory, error) {
 	return jobHistories, nil
 }
 
+// CreateSchedule to create a schedule
 func (c cduleRepository) CreateSchedule(schedule *Schedule) (*Schedule, error) {
 	if err := c.DB.Create(schedule).Error; err != nil {
 		return nil, err
@@ -201,6 +222,7 @@ func (c cduleRepository) CreateSchedule(schedule *Schedule) (*Schedule, error) {
 	return schedule, nil
 }
 
+// UpdateSchedule to update a schedule
 func (c cduleRepository) UpdateSchedule(schedule *Schedule) (*Schedule, error) {
 	if err := c.DB.Updates(schedule).Error; err != nil {
 		return nil, err
@@ -208,6 +230,7 @@ func (c cduleRepository) UpdateSchedule(schedule *Schedule) (*Schedule, error) {
 	return schedule, nil
 }
 
+// GetSchedule to get a schedule by executionID
 func (c cduleRepository) GetSchedule(executionID int64) (*Schedule, error) {
 	var schedule Schedule
 	if err := c.DB.Where("execution_id = ?", executionID).Find(&schedule).Error; err != nil {
@@ -216,6 +239,7 @@ func (c cduleRepository) GetSchedule(executionID int64) (*Schedule, error) {
 	return &schedule, nil
 }
 
+// GetScheduleBetween to get a schedule between scheduleStart and scheduleEnd and by workerID
 func (c cduleRepository) GetScheduleBetween(scheduleStart, scheduleEnd int64, workerID string) ([]Schedule, error) {
 	var schedules []Schedule
 	if err := c.DB.Where("execution_id >= ? and execution_id <= ? and worker_id = ?", scheduleStart, scheduleEnd, workerID).Find(&schedules).Error; err != nil {
@@ -224,6 +248,7 @@ func (c cduleRepository) GetScheduleBetween(scheduleStart, scheduleEnd int64, wo
 	return schedules, nil
 }
 
+// GetSchedulesForJob to get a schedules by jobID
 func (c cduleRepository) GetSchedulesForJob(jobID int64) ([]Schedule, error) {
 	var schedules []Schedule
 	if err := c.DB.Where("job_id = ?", jobID).Find(&schedules).Error; err != nil {
@@ -232,6 +257,7 @@ func (c cduleRepository) GetSchedulesForJob(jobID int64) ([]Schedule, error) {
 	return schedules, nil
 }
 
+// GetSchedulesForWorker to get a schedules by workerID
 func (c cduleRepository) GetSchedulesForWorker(workerID string) ([]Schedule, error) {
 	var schedules []Schedule
 	if err := c.DB.Where("worker_id = ?", workerID).Find(&schedules).Error; err != nil {
@@ -240,6 +266,7 @@ func (c cduleRepository) GetSchedulesForWorker(workerID string) ([]Schedule, err
 	return schedules, nil
 }
 
+// DeleteScheduleForJob to delete a schedules by jobID
 func (c cduleRepository) DeleteScheduleForJob(jobID int64) ([]Schedule, error) {
 	schedules, err := c.GetSchedulesForJob(jobID)
 	if nil != err {
@@ -254,6 +281,7 @@ func (c cduleRepository) DeleteScheduleForJob(jobID int64) ([]Schedule, error) {
 	return schedules, nil
 }
 
+// DeleteScheduleForWorker to delete a schedules by workerID
 func (c cduleRepository) DeleteScheduleForWorker(workerID string) ([]Schedule, error) {
 	schedules, err := c.GetSchedulesForWorker(workerID)
 	if nil != err {

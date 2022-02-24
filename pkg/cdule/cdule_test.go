@@ -13,7 +13,7 @@ func Test_GetWorkerID(t *testing.T) {
 	require.NotEmpty(t, workerID)
 }
 
-func createScheduler() (error, Cdule) {
+func createScheduler() (Cdule, error) {
 	dirname, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
@@ -22,5 +22,5 @@ func createScheduler() (error, Cdule) {
 
 	cdule := Cdule{}
 	cdule.NewCdule("./resources", "config_in_memory")
-	return err, cdule
+	return cdule, err
 }

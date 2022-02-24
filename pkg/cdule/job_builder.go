@@ -2,7 +2,6 @@ package cdule
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"reflect"
 	"time"
@@ -15,8 +14,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// JobRegistry job registry
 var JobRegistry = make(map[string]reflect.Type)
 
+// ScheduleParser cron parser
 var ScheduleParser cron.Parser
 
 func registerType(job Job) {
@@ -24,11 +25,13 @@ func registerType(job Job) {
 	JobRegistry[job.JobName()] = t
 }
 
+// AbstractJob for holding job and jobdata
 type AbstractJob struct {
 	Job     Job
 	JobData map[string]string
 }
 
+// NewJob to create new abstract job
 func NewJob(job Job, jobData map[string]string) *AbstractJob {
 	aj := &AbstractJob{
 		Job:     job,
@@ -37,12 +40,13 @@ func NewJob(job Job, jobData map[string]string) *AbstractJob {
 	return aj
 }
 
+// Build to build job and store in the database
 func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 	// register job, this is used later to get the type of a job
 	registerType(j.Job)
 	newJobModel, err := model.CduleRepos.CduleRepository.GetJobByName(j.Job.JobName())
 	if nil != newJobModel {
-		return nil, errors.New(fmt.Sprintf("Job with Name: %s already exists", newJobModel.JobName))
+		return nil, fmt.Errorf("job with Name: %s already exists", newJobModel.JobName)
 	}
 	if nil != err {
 		return nil, err
@@ -50,7 +54,7 @@ func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 	jobDataBytes, err := json.Marshal(j.JobData)
 	if nil != err {
 		log.Errorf("Error %s for JobName %s", err.Error(), j.Job.JobName())
-		return nil, errors.New(fmt.Sprintf("Invalid Job Data %v", j.JobData))
+		return nil, fmt.Errorf("invalid Job Data %v", j.JobData)
 	}
 	var jobDataStr = ""
 	if string(jobDataBytes) != pkg.EMPTYSTRING {

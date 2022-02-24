@@ -11,8 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// WorkerID string
 var WorkerID string
 
+// Cdule holds watcher objects
 type Cdule struct {
 	*WorkerWatcher
 	*ScheduleWatcher
@@ -21,10 +23,14 @@ type Cdule struct {
 func init() {
 	WorkerID = getWorkerID()
 }
+
+// NewCduleWithWorker to create new scheduler with worker
 func (cdule *Cdule) NewCduleWithWorker(workerName string, param ...string) {
 	WorkerID = workerName
 	cdule.NewCdule(param...)
 }
+
+// NewCdule to create new scheduler with default worker name as hostname
 func (cdule *Cdule) NewCdule(param ...string) {
 	if nil == param {
 		param = []string{"./resources", "config", "errorLogType"} // default path for resources
@@ -74,6 +80,7 @@ func (cdule *Cdule) createWatcherAndWaitForSignal() {
 	}*/
 }
 
+// StopWatcher to stop watchers
 func (cdule Cdule) StopWatcher() {
 	cdule.WorkerWatcher.Stop()
 	cdule.ScheduleWatcher.Stop()

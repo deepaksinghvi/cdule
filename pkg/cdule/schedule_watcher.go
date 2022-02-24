@@ -15,6 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// ScheduleWatcher struct
 type ScheduleWatcher struct {
 	Closed chan struct{}
 	WG     sync.WaitGroup
@@ -24,6 +25,7 @@ type ScheduleWatcher struct {
 var lastScheduleExecutionTime int64
 var nextScheduleExecutionTime int64
 
+// Run to run watcher in a continuous loop
 func (t *ScheduleWatcher) Run() {
 	for {
 		select {
@@ -40,6 +42,7 @@ func (t *ScheduleWatcher) Run() {
 	}
 }
 
+// Stop to stop scheduler watcher
 func (t *ScheduleWatcher) Stop() {
 	close(t.Closed)
 	t.WG.Wait()
@@ -140,6 +143,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 	log.Infof("Schedules Completed For StartTime %d To EndTime %d", scheduleStart, scheduleEnd)
 }
 
+// WorkerJobCount struct
 type WorkerJobCount struct {
 	WorkerID string `json:"worker_id"`
 	Count    int64  `json:"count"`
