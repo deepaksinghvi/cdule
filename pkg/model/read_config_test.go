@@ -24,7 +24,7 @@ func Test_ReadConfigInDB(t *testing.T) {
 }
 
 func Test_ReadConfig_InvalidConfigPath(t *testing.T) {
-	param := []string{"../../resourceswhichdoesnotexists", "config"}
+	param := []string{"../resourceswhichdoesnotexists", "invalidconfig"}
 	_, err := readConfig(param)
 	require.Error(t, err)
 }

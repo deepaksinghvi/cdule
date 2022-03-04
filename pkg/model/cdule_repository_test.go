@@ -2,6 +2,10 @@ package model
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/DATA-DOG/go-sqlmock"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
 	l "log"
 	"os"
 	"testing"
@@ -61,6 +65,9 @@ func TestRepository_JobHistory(t *testing.T) {
 	require.Equal(t, expectedResult.JobID, actualResultJobHistoryArray[0].JobID)
 	require.Equal(t, expectedResult.ExecutionID, actualResultJobHistoryArray[0].ExecutionID)
 
+	actualResultJobHistoryArray, err = CduleRepos.CduleRepository.GetJobHistoryWithLimit(expectedResult.JobID, 2)
+	require.Equal(t, 1, len(actualResultJobHistoryArray))
+
 	expectedResult.Status = JobStatusInProgress
 	_, err = CduleRepos.CduleRepository.UpdateJobHistory(expectedResult)
 
@@ -84,6 +91,9 @@ func TestRepository_Schedule(t *testing.T) {
 	if diff := cmp.Diff(expectedResult, actualResult, approxTime); diff != "" {
 		t.Fatalf("mismatch (-expectedResult, +actRes):\n%s", diff)
 	}
+
+	actualSchedules, err := CduleRepos.CduleRepository.GetScheduleBetween(schedule.ExecutionID, actualResult.CreatedAt.Add(5*time.Minute).UnixNano(), actualResult.WorkerID)
+	require.EqualValues(t, 1, len(actualSchedules))
 
 	data := make(map[string]string)
 	data["a"] = "xyz"
@@ -115,6 +125,10 @@ func TestRepository_Worker(t *testing.T) {
 	if diff := cmp.Diff(expectedResult, actualResult, approxTime); diff != "" {
 		t.Fatalf("mismatch (-expectedResult, +actRes):\n%s", diff)
 	}
+
+	workers, err := CduleRepos.CduleRepository.GetWorkers()
+	require.EqualValues(t, 1, len(workers))
+
 	expectedResult.UpdatedAt = time.Now()
 	_, err = CduleRepos.CduleRepository.UpdateWorker(expectedResult)
 
@@ -125,6 +139,104 @@ func TestRepository_Worker(t *testing.T) {
 	actualResult, err = CduleRepos.CduleRepository.DeleteWorker(expectedResult.WorkerID)
 
 	require.Equal(t, expectedResult.WorkerID, actualResult.WorkerID)
+}
+
+func TestRepository_WithMockDBForErrors(t *testing.T) {
+	DB, mock := NewMock()
+	mock.ExpectQuery(`^INSERT INTO workers`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^SELECT * FROM workers`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^UPDATE workers`).WillReturnError(errors.New("db error"))
+
+	mock.ExpectQuery(`^INSERT INTO jobs`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^SELECT * FROM jobs`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^UPDATE jobs`).WillReturnError(errors.New("db error"))
+
+	mock.ExpectQuery(`^INSERT INTO job_histories`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^SELECT * FROM job_histories`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^UPDATE job_histories`).WillReturnError(errors.New("db error"))
+
+	mock.ExpectQuery(`^INSERT INTO schedules`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^SELECT * FROM schedules`).WillReturnError(errors.New("db error"))
+	mock.ExpectQuery(`^UPDATE schedules`).WillReturnError(errors.New("db error"))
+
+	CduleRepos = &Repositories{
+		CduleRepository: NewCduleRepository(DB),
+		DB:              DB,
+	}
+	worker, _ := createTestWorker()
+	_, err := CduleRepos.CduleRepository.CreateWorker(worker)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetWorker("dummyworker")
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.UpdateWorker(worker)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetWorkers()
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.DeleteWorker("dummyworker")
+	require.Error(t, err)
+
+	job, _ := createTestJob()
+	_, err = CduleRepos.CduleRepository.CreateJob(job)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetJob(1)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetJobByName("dummyjob")
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.UpdateJob(job)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.DeleteJob(1)
+	require.Error(t, err)
+
+	jHistory, _ := createTestJobHistory()
+	_, err = CduleRepos.CduleRepository.CreateJobHistory(jHistory)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetJobHistory(1)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetJobHistoryWithLimit(1, 2)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetJobHistoryForSchedule(1)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.UpdateJobHistory(jHistory)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.DeleteJobHistory(1)
+	require.Error(t, err)
+
+	schedule, _ := createTestSchedule()
+	_, err = CduleRepos.CduleRepository.CreateSchedule(schedule)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetSchedule(1)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetScheduleBetween(1, 2, "dummyworker")
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.GetSchedulesForJob(1)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.UpdateSchedule(schedule)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.DeleteScheduleForJob(1)
+	require.Error(t, err)
+	_, err = CduleRepos.CduleRepository.DeleteScheduleForWorker("dummyworker")
+	require.Error(t, err)
+
+}
+func NewMock() (*gorm.DB, sqlmock.Sqlmock) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	defer db.Close()
+
+	// create dialector
+	dialector := postgres.New(postgres.Config{
+		Conn:                 db,
+		DriverName:           "postgres",
+		PreferSimpleProtocol: true,
+	})
+	gormdb, err := gorm.Open(dialector, &gorm.Config{PrepareStmt: true})
+	if err != nil {
+		log.Fatalf("[gorm open] %s", err)
+	}
+	return gormdb, mock
 }
 
 func createTestWorker() (*Worker, error) {
@@ -203,10 +315,10 @@ func DBConn() error {
 	sqlLogger := logger.New(
 		l.New(os.Stdout, "\r\n", l.LstdFlags), // io writer
 		logger.Config{
-			SlowThreshold:             time.Second,  // Slow SQL threshold
-			LogLevel:                  logger.Error, // Log level
-			IgnoreRecordNotFoundError: true,         // Ignore ErrRecordNotFound error for logger
-			Colorful:                  true,         // Disable color
+			SlowThreshold:             time.Second, // Slow SQL threshold
+			LogLevel:                  logger.Info, // Log level
+			IgnoreRecordNotFoundError: true,        // Ignore ErrRecordNotFound error for logger
+			Colorful:                  true,        // Disable color
 		},
 	)
 

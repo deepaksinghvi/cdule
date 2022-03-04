@@ -45,17 +45,14 @@ func (j *AbstractJob) Build(cronExpression string) (*model.Job, error) {
 	// register job, this is used later to get the type of a job
 	registerType(j.Job)
 	newJobModel, err := model.CduleRepos.CduleRepository.GetJobByName(j.Job.JobName())
-	if nil != newJobModel {
+	if nil != newJobModel || nil != err {
 		return nil, fmt.Errorf("job with Name: %s already exists", newJobModel.JobName)
 	}
-	if nil != err {
-		return nil, err
-	}
 	jobDataBytes, err := json.Marshal(j.JobData)
-	if nil != err {
+	/*if nil != err {
 		log.Errorf("Error %s for JobName %s", err.Error(), j.Job.JobName())
 		return nil, fmt.Errorf("invalid Job Data %v", j.JobData)
-	}
+	}*/
 	var jobDataStr = ""
 	if string(jobDataBytes) != pkg.EMPTYSTRING {
 		jobDataStr = string(jobDataBytes)

@@ -29,7 +29,6 @@ type CduleRepository interface {
 	UpdateJob(job *Job) (*Job, error)
 	GetJob(jobID int64) (*Job, error)
 	GetJobByName(name string) (*Job, error)
-	GetJobs(workerID string) ([]Job, error)
 	DeleteJob(jobID int64) (*Job, error)
 
 	CreateJobHistory(jobHistory *JobHistory) (*JobHistory, error)
@@ -88,14 +87,11 @@ func (c cduleRepository) GetWorkers() ([]Worker, error) {
 
 // DeleteWorker to delete a worker
 func (c cduleRepository) DeleteWorker(workerID string) (*Worker, error) {
-	var worker Worker
-	if err := c.DB.Where("worker_id = ?", workerID).First(&worker).Error; err != nil {
+	worker, err := c.GetWorker(workerID)
+	if err = c.DB.Delete(&worker).Error; err != nil {
 		return nil, err
 	}
-	if err := c.DB.Delete(&worker).Error; err != nil {
-		return nil, err
-	}
-	return &worker, nil
+	return worker, nil
 }
 
 // CreateJob to create a job
@@ -136,15 +132,6 @@ func (c cduleRepository) GetJobByName(jobName string) (*Job, error) {
 		return nil, nil
 	}
 	return &job, nil
-}
-
-// GetJobs to get a job based on workerID
-func (c cduleRepository) GetJobs(workerID string) ([]Job, error) {
-	var jobs []Job
-	if err := c.DB.Where("worker_id = ? and expired=false", workerID).Find(&jobs).Error; err != nil {
-		return nil, err
-	}
-	return jobs, nil
 }
 
 // DeleteJob to get a job based on ID

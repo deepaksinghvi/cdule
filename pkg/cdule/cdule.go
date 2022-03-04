@@ -1,7 +1,6 @@
 package cdule
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -116,7 +115,6 @@ func createSchedulerWatcher() *ScheduleWatcher {
 func getWorkerID() string {
 	hostname, err := os.Hostname()
 	if err != nil {
-		fmt.Println(err)
 		os.Exit(1)
 	}
 	return hostname
