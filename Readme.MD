@@ -145,3 +145,10 @@ EveryMonthOnSecondAtNoon = "0 0 12 2 * ?"
 
 * Cron parser using the library [robfig/cron](https://github.com/robfig/cron)  
 * ORM usign the library [gorm.io](https://gorm.io/)
+
+### Other Reports
+pkg.go.dev: https://pkg.go.dev/github.com/deepaksinghvi/cdule
+
+goreportcard.com: https://goreportcard.com/report/github.com/deepaksinghvi/cdule
+
+coverage service link: https://app.codecov.io/gh/deepaksinghvi/cdule
