@@ -11,6 +11,7 @@ import (
 	"github.com/deepaksinghvi/cdule/pkg"
 
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -41,6 +42,8 @@ func ConnectDataBase(param []string) (*pkg.CduleConfig, error) {
 	if cduleConfig.Cduletype == string(pkg.DATABASE) {
 		if strings.Contains(cduleConfig.Dburl, "postgres") {
 			db = postgresConn(cduleConfig.Dburl)
+		} else if strings.Contains(cduleConfig.Dburl, "mysql") {
+			db = mysqlConn(cduleConfig.Dburl)
 		}
 	} else if cduleConfig.Cduletype == string(pkg.MEMORY) {
 		db = sqliteConn(cduleConfig.Dburl)
@@ -82,7 +85,17 @@ func postgresConn(dbDSN string) (db *gorm.DB) {
 		panic("Failed to connect to database! " + dbDSN)
 	}
 	return db
+}
 
+func mysqlConn(dbDSN string) (db *gorm.DB) {
+	// splitting DSN to only use the string after mysql://
+	splitDSN := strings.Split(dbDSN, "mysql://")
+	db, err := gorm.Open(mysql.Open(splitDSN[1]), &gorm.Config{})
+	if err != nil {
+		log.Errorf("Error Connecting MySQL %s, %s", dbDSN, err.Error())
+		panic("Failed to connect to database! " + dbDSN)
+	}
+	return db
 }
 
 func sqliteConn(dbDSN string) (db *gorm.DB) {
