@@ -13,10 +13,10 @@ type cduleRepository struct {
 }
 
 // NewCduleRepository cdule repository
-func NewCduleRepository(db *gorm.DB, heart time.Duration) CduleRepository {
+func NewCduleRepository(db *gorm.DB) CduleRepository {
 	return cduleRepository{
 		DB:    db,
-		Heart: heart,
+		Heart: 30 * time.Second,
 	}
 }
 
