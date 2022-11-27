@@ -26,6 +26,7 @@ type CduleRepository interface {
 	UpdateWorker(worker *Worker) (*Worker, error)
 	GetWorker(workerID string) (*Worker, error)
 	GetWorkers() ([]Worker, error)
+	GetAliveWorkers() ([]Worker, error)
 	DeleteWorker(workerID string) (*Worker, error)
 
 	CreateJob(job *Job) (*Job, error)
