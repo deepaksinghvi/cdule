@@ -56,7 +56,7 @@ func runNextScheduleJobs(scheduleStart, scheduleEnd int64) {
 		log.Error(err)
 		return
 	}
-	workers, err := model.CduleRepos.CduleRepository.GetWorkers()
+	workers, err := model.CduleRepos.CduleRepository.GetAliveWorkers()
 	if nil != err {
 		log.Error(err)
 		return

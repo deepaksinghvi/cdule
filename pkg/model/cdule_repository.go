@@ -2,18 +2,21 @@ package model
 
 import (
 	"gorm.io/gorm"
+	"time"
 
 	"github.com/deepaksinghvi/cdule/pkg"
 )
 
 type cduleRepository struct {
-	DB *gorm.DB
+	DB    *gorm.DB
+	Heart time.Duration
 }
 
 // NewCduleRepository cdule repository
 func NewCduleRepository(db *gorm.DB) CduleRepository {
 	return cduleRepository{
-		DB: db,
+		DB:    db,
+		Heart: 30 * time.Second,
 	}
 }
 
@@ -23,6 +26,7 @@ type CduleRepository interface {
 	UpdateWorker(worker *Worker) (*Worker, error)
 	GetWorker(workerID string) (*Worker, error)
 	GetWorkers() ([]Worker, error)
+	GetAliveWorkers() ([]Worker, error)
 	DeleteWorker(workerID string) (*Worker, error)
 
 	CreateJob(job *Job) (*Job, error)
@@ -80,6 +84,17 @@ func (c cduleRepository) GetWorker(workerID string) (*Worker, error) {
 func (c cduleRepository) GetWorkers() ([]Worker, error) {
 	var workers []Worker
 	if err := c.DB.Find(&workers).Error; err != nil {
+		return workers, err
+	}
+	return workers, nil
+}
+
+// GetAliveWorkers to get a list of alive workers
+func (c cduleRepository) GetAliveWorkers() ([]Worker, error) {
+	var workers []Worker
+	// updated_at gt 3 heart means alive
+	available := time.Now().Add(-3 * c.Heart)
+	if err := c.DB.Where("updated_at > ?", available).Find(&workers).Error; err != nil {
 		return workers, err
 	}
 	return workers, nil
