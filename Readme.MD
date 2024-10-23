@@ -5,7 +5,7 @@ Golang based scheduler library with database support.
 Users could use any database which is supported by [gorm.io](https://gorm.io/).
 
 ### To Download the cdule library
-```
+```shell
 go get github.com/deepaksinghvi/cdule
 ```
 
@@ -34,14 +34,14 @@ dburl is the database connection url.
 cduleconsistency is for reserved for future usage.
 
 ### config.yml for postgressql based configuration
-```
+```yaml
 cduletype: DATABASE
 dburl: postgres://cduleuser:cdulepassword@localhost:5432/cdule?sslmode=disable
 cduleconsistency: AT_MOST_ONCE
 ```
 
 ### config.yml for sqlite based in-memory configuration
-```
+```yaml
 cduletype: MEMORY
 dburl: /Users/dsinghvi/sqlite.db
 cduleconsistency: AT_MOST_ONCE
@@ -50,7 +50,7 @@ cduleconsistency: AT_MOST_ONCE
 
 ## Job Interface Implementation
 
-```
+```go
 var testJobData map[string]string
 
 type TestJob struct {
@@ -83,7 +83,7 @@ func (m TestJob) GetJobData() map[string]string {
 ## Schedule a Job
 It is expected that testJob will be Executed five times, once for every minute and program will exit. TestJob jobData map holds the data in the format of map[string]string where gets stored for every execution and gets updated as the next counter value on Execute() method call.
 
-```
+```go
 cdule := cdule.Cdule{}
 cdule.NewCdule()
 testJob := TestJob{}
@@ -118,7 +118,7 @@ For the sample app, postgresql is used but users can use any db which is support
 
 ### Sample Cron
 Users can use the pre-defined crons or use their own which are the [standard cron](https://en.wikipedia.org/wiki/Cron) expression
-```
+```go
 EveryMinute              = "0 * * ? * *"
 EveryEvenMinute          = "0 */2 * ? * *"
 EveryUnEvenMinute        = "0 1/2 * ? * *"
@@ -141,9 +141,9 @@ EveryMonthOnSecondAtNoon = "0 0 12 2 * ?"
 ```
 
 
-### This library is built using 
+### This library is built using
 
-* Cron parser using the library [robfig/cron](https://github.com/robfig/cron)  
+* Cron parser using the library [robfig/cron](https://github.com/robfig/cron)
 * ORM usign the library [gorm.io](https://gorm.io/)
 
 ### Other Reports
