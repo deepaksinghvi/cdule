@@ -11,9 +11,6 @@ import (
 )
 
 func Test_ConnectDatabase(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping PostgreSQL test in -short mode")
-	}
 	param := []string{"../../resources", "config_in_memory", "Info"} // default path for resource
 	cduleConfig, err := ConnectDataBase(param)
 	require.NoError(t, err)
@@ -36,7 +33,7 @@ func Test_ConnectDatabaseFailedToReadConfig(t *testing.T) {
 }
 
 func Test_ConnectPostgresDB(t *testing.T) {
-	if testing.Short() {
+	if !testing.Short() {
 		t.Skip("skipping PostgreSQL test in -short mode")
 	}
 	db := postgresConn("postgres://cduleuser:cdulepassword@localhost:5432/cdule?sslmode=disable")
