@@ -15,6 +15,7 @@ func Test_ConnectDatabase(t *testing.T) {
 	cduleConfig, err := ConnectDataBase(param)
 	require.NoError(t, err)
 	require.NotEqual(t, pkg.EMPTYSTRING, cduleConfig.Dburl)
+	_ = os.Remove("./sqlite.db")
 }
 
 func Test_ConnectDatabaseFailedToReadConfig(t *testing.T) {
