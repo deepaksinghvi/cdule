@@ -122,7 +122,7 @@ func Migrate(db *gorm.DB) {
 func printConfig(config *pkg.CduleConfig) {
 	configJSON, err := json.MarshalIndent(config, "", "  ")
 	if err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err)
 	}
 	fmt.Printf("Configuration %s\n", string(configJSON))
 }

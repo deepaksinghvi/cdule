@@ -8,17 +8,18 @@ import (
 )
 
 func readConfig(param []string) (*pkg.CduleConfig, error) {
-	viper.AddConfigPath(param[0]) //"./resources"
-	viper.SetConfigName(param[1]) // "config"
-	viper.AutomaticEnv()
-	viper.SetConfigType("yml")
+	v := viper.New()
+	v.AddConfigPath(param[0]) //"./resources"
+	v.SetConfigName(param[1]) // "config"
+	v.AutomaticEnv()
+	v.SetConfigType("yml")
 
 	var cduleConfig pkg.CduleConfig
-	if err := viper.ReadInConfig(); err != nil {
+	if err := v.ReadInConfig(); err != nil {
 		log.Error("Error reading config file ", err)
 		return nil, err
 	}
-	err := viper.Unmarshal(&cduleConfig)
+	err := v.Unmarshal(&cduleConfig)
 	if err != nil {
 		log.Error("Unable to read into CduleConfig ", err)
 		return nil, err
