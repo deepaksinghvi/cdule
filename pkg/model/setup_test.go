@@ -1,11 +1,13 @@
 package model
 
 import (
+	"os"
+	"path/filepath"
+	"testing"
+
 	"github.com/deepaksinghvi/cdule/pkg"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 func Test_ConnectDatabase(t *testing.T) {
@@ -13,6 +15,7 @@ func Test_ConnectDatabase(t *testing.T) {
 	cduleConfig, err := ConnectDataBase(param)
 	require.NoError(t, err)
 	require.NotEqual(t, pkg.EMPTYSTRING, cduleConfig.Dburl)
+	_ = os.Remove("./sqlite.db")
 }
 
 func Test_ConnectDatabaseFailedToReadConfig(t *testing.T) {
@@ -24,11 +27,15 @@ func Test_ConnectDatabaseFailedToReadConfig(t *testing.T) {
 		}
 	}()
 	param := []string{"./resources", "config_in_memory", "Info"} // default path for resource
-	_, _ = ConnectDataBase(param)
+	_, err := ConnectDataBase(param)
+	require.Error(t, err)
 	require.EqualValues(t, true, recovered)
 }
 
 func Test_ConnectPostgresDB(t *testing.T) {
+	if !testing.Short() {
+		t.Skip("skipping PostgreSQL test in -short mode")
+	}
 	db := postgresConn("postgres://cduleuser:cdulepassword@localhost:5432/cdule?sslmode=disable")
 	require.NotNil(t, db)
 }
@@ -57,6 +64,7 @@ func Test_ConnectSqlite(t *testing.T) {
 	require.NotNil(t, db)
 }
 
+// Test_ConnectSqliteDBPanic tests the panic when the database file is not found
 func Test_ConnectSqliteDBPanic(t *testing.T) {
 	recovered := false
 	defer func() {
@@ -65,13 +73,9 @@ func Test_ConnectSqliteDBPanic(t *testing.T) {
 			recovered = true
 		}
 	}()
-	dirname, err := os.UserHomeDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-	_ = os.Remove(dirname + "/sqlite.db")
-
-	db := sqliteConn("///")
+	// Use a guaranteed invalid path (non-existent nested directory)
+	invalidPath := filepath.Join(os.TempDir(), "cdule-test-nonexistent", "nested", "db.sqlite")
+	db := sqliteConn(invalidPath)
 	require.Nil(t, db)
 	require.EqualValues(t, true, recovered)
 }

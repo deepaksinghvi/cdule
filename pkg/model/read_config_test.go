@@ -1,6 +1,7 @@
 package model
 
 import (
+	"os"
 	"testing"
 
 	"github.com/deepaksinghvi/cdule/pkg"
@@ -12,7 +13,8 @@ func Test_ReadConfigInMemory(t *testing.T) {
 	cduleConfig, err := readConfig(param)
 	require.NoError(t, err)
 	require.Equal(t, string(pkg.MEMORY), cduleConfig.Cduletype)
-	require.Equal(t, "/Users/dsinghvi/sqlite.db", cduleConfig.Dburl)
+	require.Equal(t, "./sqlite.db", cduleConfig.Dburl)
+	_ = os.Remove("./sqlite.db")
 }
 
 func Test_ReadConfigInDB(t *testing.T) {
